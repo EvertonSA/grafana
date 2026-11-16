@@ -967,7 +967,9 @@
    },
    "type": "object"
   },
-  "EvalQueriesResponse": {},
+  "EvalQueriesResponse": {
+   "type": "object"
+  },
   "ExplorePanelsState": {
    "description": "This is an object constructed with the keys as the values of the enum VisType and the value being a bag of properties"
   },
@@ -3655,6 +3657,20 @@
    },
    "type": "object"
   },
+  "SilenceMetadata": {
+   "properties": {
+    "folder_uid": {
+     "type": "string"
+    },
+    "rule_title": {
+     "type": "string"
+    },
+    "rule_uid": {
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
   "SlackAction": {
    "description": "See https://api.slack.com/docs/message-attachments#action_fields and https://api.slack.com/docs/message-buttons\nfor more information.",
    "properties": {
@@ -4436,22 +4452,6 @@
    "type": "object"
   },
   "alertGroup": {
-   "description": "AlertGroup alert group",
-   "properties": {
-    "alerts": {
-     "description": "alerts",
-     "items": {
-      "$ref": "#/definitions/gettableAlert"
-     },
-     "type": "array"
-    },
-    "labels": {
-     "$ref": "#/definitions/labelSet"
-    },
-    "receiver": {
-     "$ref": "#/definitions/receiver"
-    }
-   },
    "required": [
     "alerts",
     "labels",
@@ -4460,8 +4460,10 @@
    "type": "object"
   },
   "alertGroups": {
+   "description": "AlertGroups alert groups",
    "items": {
-    "$ref": "#/definitions/alertGroup"
+    "$ref": "#/definitions/alertGroup",
+    "type": "object"
    },
    "type": "array"
   },
@@ -4622,7 +4624,33 @@
   "gettableAlerts": {
    "description": "GettableAlerts gettable alerts",
    "items": {
-    "$ref": "#/definitions/gettableAlert"
+    "$ref": "#/definitions/gettableAlert",
+    "type": "object"
+   },
+   "type": "array"
+  },
+  "gettableGrafanaSilence": {
+   "properties": {
+    "accessControl": {
+     "additionalProperties": {
+      "type": "boolean"
+     },
+     "example": {
+      "create": false,
+      "read": true,
+      "write": false
+     },
+     "type": "object"
+    },
+    "metadata": {
+     "$ref": "#/definitions/SilenceMetadata"
+    }
+   },
+   "type": "object"
+  },
+  "gettableGrafanaSilences": {
+   "items": {
+    "$ref": "#/definitions/gettableGrafanaSilence"
    },
    "type": "array"
   },
@@ -4677,34 +4705,12 @@
   },
   "gettableSilences": {
    "items": {
-    "$ref": "#/definitions/gettableSilence"
+    "$ref": "#/definitions/gettableSilence",
+    "type": "object"
    },
    "type": "array"
   },
   "integration": {
-   "properties": {
-    "lastNotifyAttempt": {
-     "description": "A timestamp indicating the last attempt to deliver a notification regardless of the outcome.\nFormat: date-time",
-     "format": "date-time",
-     "type": "string"
-    },
-    "lastNotifyAttemptDuration": {
-     "description": "Duration of the last attempt to deliver a notification in humanized format (`1s` or `15ms`, etc).",
-     "type": "string"
-    },
-    "lastNotifyAttemptError": {
-     "description": "Error string for the last attempt to deliver a notification. Empty if the last attempt was successful.",
-     "type": "string"
-    },
-    "name": {
-     "description": "name",
-     "type": "string"
-    },
-    "sendResolved": {
-     "description": "send resolved",
-     "type": "boolean"
-    }
-   },
    "required": [
     "name",
     "sendResolved"
@@ -4825,33 +4831,6 @@
    "type": "array"
   },
   "postableSilence": {
-   "properties": {
-    "comment": {
-     "description": "comment",
-     "type": "string"
-    },
-    "createdBy": {
-     "description": "created by",
-     "type": "string"
-    },
-    "endsAt": {
-     "description": "ends at",
-     "format": "date-time",
-     "type": "string"
-    },
-    "id": {
-     "description": "id",
-     "type": "string"
-    },
-    "matchers": {
-     "$ref": "#/definitions/matchers"
-    },
-    "startsAt": {
-     "description": "starts at",
-     "format": "date-time",
-     "type": "string"
-    }
-   },
    "required": [
     "comment",
     "createdBy",
@@ -4862,6 +4841,7 @@
    "type": "object"
   },
   "receiver": {
+   "description": "Receiver receiver",
    "properties": {
     "active": {
      "description": "active",
@@ -5146,9 +5126,9 @@
     ],
     "responses": {
      "200": {
-      "description": "gettableSilence",
+      "description": "gettableGrafanaSilence",
       "schema": {
-       "$ref": "#/definitions/gettableSilence"
+       "$ref": "#/definitions/gettableGrafanaSilence"
       }
      },
      "400": {
@@ -5175,13 +5155,25 @@
       },
       "name": "filter",
       "type": "array"
+     },
+     {
+      "description": "Return rule metadata with silence.",
+      "in": "query",
+      "name": "ruleMetadata",
+      "type": "boolean"
+     },
+     {
+      "description": "Return access control metadata with silence.",
+      "in": "query",
+      "name": "accesscontrol",
+      "type": "boolean"
      }
     ],
     "responses": {
      "200": {
-      "description": "gettableSilences",
+      "description": "gettableGrafanaSilences",
       "schema": {
-       "$ref": "#/definitions/gettableSilences"
+       "$ref": "#/definitions/gettableGrafanaSilences"
       }
      },
      "400": {
@@ -5800,6 +5792,18 @@
       },
       "name": "filter",
       "type": "array"
+     },
+     {
+      "description": "Return rule metadata with silence.",
+      "in": "query",
+      "name": "ruleMetadata",
+      "type": "boolean"
+     },
+     {
+      "description": "Return access control metadata with silence.",
+      "in": "query",
+      "name": "accesscontrol",
+      "type": "boolean"
      },
      {
       "description": "DatasoureUID should be the datasource UID identifier",
